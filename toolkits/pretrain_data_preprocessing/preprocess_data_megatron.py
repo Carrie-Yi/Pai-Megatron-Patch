@@ -295,8 +295,8 @@ def main():
             'output_prefix': args.output_prefix}
         in_ss_out_names.append(file_names)
     else:
-        file_list = os.listdir(args.input)
-        in_file_names = [os.path.join(args.input, file) for file in file_list]
+        pattern = os.path.join(args.input, '**', '*.jsonl')
+        in_file_names = glob.glob(pattern, recursive=True)
 
         # Count total number of lines across .jsonl files
         if args.keep_sequential_samples:
