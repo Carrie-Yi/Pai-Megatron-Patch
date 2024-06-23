@@ -79,7 +79,7 @@ class Encoder(object):
                     sentence_ids = Encoder.tokenizer.tokenizer(sentence, add_special_tokens=False)['input_ids']
                 else:
                     sentence_ids = Encoder.tokenizer(sentence, add_special_tokens=False)['input_ids']
-                if max(sentence_ids) >= Encoder.tokenizer.vocab_size:
+                if len(sentence_ids) > 0 and max(sentence_ids) >= Encoder.tokenizer.vocab_size:
                     print(text)
                     print(max(sentence_ids))
                     continue
