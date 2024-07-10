@@ -56,7 +56,7 @@ class Encoder(object):
         data = json.loads(json_line)
         output = {}
         for key in self.args.json_keys:
-            text = data[key]
+            text = data.get(key, data.get('text', data.get('content')))
             max_len = 1000000
             tokens_list = [Encoder.splitter.tokenize(text[i:i+max_len]) for i in range(0, len(text), max_len)]
             output[key] = [tokens for partial in tokens_list for tokens in partial]
@@ -67,7 +67,7 @@ class Encoder(object):
         ids = {}
         lens = {}
         for key in self.args.json_keys:
-            text = data[key]
+            text = data.get(key, data.get('text', data.get('content')))
             if isinstance(text, list):
                 sentences = text
             else:
@@ -79,10 +79,10 @@ class Encoder(object):
                     sentence_ids = Encoder.tokenizer.tokenizer(sentence, add_special_tokens=False)['input_ids']
                 else:
                     sentence_ids = Encoder.tokenizer(sentence, add_special_tokens=False)['input_ids']
-                if max(sentence_ids) >= Encoder.tokenizer.vocab_size:
-                    print(text)
-                    print(max(sentence_ids))
-                    continue
+                # if max(sentence_ids) >= Encoder.tokenizer.vocab_size:
+                #     print(text)
+                #     print(max(sentence_ids))
+                #     continue
                 if len(sentence_ids) > 0:
                     doc_ids.extend(sentence_ids)
                     sentence_lens.append(len(sentence_ids))
@@ -295,8 +295,8 @@ def main():
             'output_prefix': args.output_prefix}
         in_ss_out_names.append(file_names)
     else:
-        file_list = os.listdir(args.input)
-        in_file_names = [os.path.join(args.input, file) for file in file_list]
+        pattern = os.path.join(args.input, '**', '*.jsonl')
+        in_file_names = glob.glob(pattern, recursive=True)
 
         # Count total number of lines across .jsonl files
         if args.keep_sequential_samples:
@@ -304,8 +304,7 @@ def main():
             for filename in in_file_names:
                 with open(filename, "r") as fin:
                     for fc, _ in enumerate(fin):
-                        pass
-                total_sample_count += (fc + 1)
+                        total_sample_count += (fc + 1)
             partition_size = math.ceil(total_sample_count / args.partitions)
 
         # create .jsonl parition files
